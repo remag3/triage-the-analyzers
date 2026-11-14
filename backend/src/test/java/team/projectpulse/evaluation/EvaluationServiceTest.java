@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -645,6 +646,27 @@ class EvaluationServiceTest {
         assertThat(peerEvaluationAverages.get(1).getAverageTotalScore()).isCloseTo(41.66, within(0.01));
         assertThat(peerEvaluationAverages.get(2).getWeek()).isEqualTo("2023-W33");
         assertThat(peerEvaluationAverages.get(2).getAverageTotalScore()).isCloseTo(0.0, within(0.01));
+    }
+
+    @Test
+    void testGenerateEvaluationSummariesForStudent_WithNullAuthority_DoesNotThrowNpe() {
+        // Given
+        given(this.studentRepository.findById(4)).willReturn(Optional.of(this.eric));
+        given(this.evaluationRepository.findByWeekAndEvaluateeId("2023-W31", 4)).willReturn(this.ericsW31Evaluations);
+        given(this.evaluationRepository.findByWeekAndEvaluateeId("2023-W32", 4)).willReturn(this.ericsW32Evaluations);
+
+        // An authority whose getAuthority() returns null
+        GrantedAuthority nullAuthority = () -> null;
+
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(new UsernamePasswordAuthenticationToken("user", null, List.of(nullAuthority)));
+        SecurityContextHolder.setContext(securityContext);
+
+        // When
+        List<PeerEvaluationAverage> peerEvaluationAverages = this.evaluationService.generateEvaluationSummariesForStudent(4, "2023-W31", "2023-W33");
+
+        // Then
+        assertThat(peerEvaluationAverages).hasSize(3);
     }
 
     @Test
