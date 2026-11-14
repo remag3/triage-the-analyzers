@@ -1,5 +1,6 @@
 package team.projectpulse.evaluation;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import team.projectpulse.rubric.Criterion;
 import jakarta.persistence.*;
 
@@ -19,11 +20,19 @@ public class Rating {
     public Rating() {
     }
 
+    @SuppressFBWarnings(
+            value = "CT_CONSTRUCTOR_THROW",
+            justification = "JPA entity classes cannot be final per Jakarta Persistence Specification Section 2.1; constructors perform domain validation"
+    )
     public Rating(Criterion criterion, Double actualScore) {
         this.criterion = criterion;
         setActualScore(actualScore);
     }
 
+    @SuppressFBWarnings(
+            value = "CT_CONSTRUCTOR_THROW",
+            justification = "JPA entity classes cannot be final per Jakarta Persistence Specification Section 2.1; constructors perform domain validation"
+    )
     public Rating(Integer ratingId, Criterion criterion, Double actualScore) {
         this.ratingId = ratingId;
         this.criterion = criterion;
